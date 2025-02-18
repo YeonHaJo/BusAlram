@@ -1,0 +1,161 @@
+package org.example;
+
+import com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.rmi.MarshalledObject;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.List;
+import java.util.Timer;
+
+public class BusAlram extends Thread implements ActionListener {
+    List<Map<String,Object>> resultList = null;
+    int busnum_first = 0;
+    int busnum_second =0;
+    int time_value_first =0;
+    int time_value_second =0;
+
+    String time = "";
+    public BusAlram(){
+        JFrame f = new JFrame("집으로");
+        f.setSize(400,200);
+        f.setLocation(100,100);
+        f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+
+        f.setLayout(new FlowLayout(FlowLayout.CENTER,20,30));
+
+        String[]name = {"5시30분","5시45분","6시00분","6시15분","6시30분"};
+        for(int i = 0; i<name.length; i++){
+            JButton jb =  new JButton(name[i]);
+            jb.setSize(140,50);
+            jb.addActionListener(this);
+            jb.setLocation(100,100);
+            f.add(jb);
+        }
+
+        f.setVisible(true);
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        System.out.println(e.getActionCommand());
+        time = e.getActionCommand();
+
+        switch (time) {
+            case "5시30분":
+                AlramStart(17,25);
+            case "5시45분":
+                AlramStart(17,40);
+            case "6시00분":
+                AlramStart(17,55);
+            case "6시15분":
+                AlramStart(18,10);
+            case "6시30분":
+                AlramStart(18,25);
+        }
+
+    }
+
+    //241410001 마을1번   241408002 마을 3번
+        public List<Map<String, Object>> getMessage() throws IOException {
+            List<Map<String,Object>> resultList = new ArrayList<Map<String, Object>>();
+
+            StringBuilder urlBuilder = new StringBuilder("https://apis.data.go.kr/6410000/busarrivalservice/v2/getBusArrivalListv2"); /*URL*/
+            //urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" +"WGQIT5NrsgBmzWYajkZZlOYS9tf8E6yNihUQiFNg3Dvl6mwxhpu0V%2FlzjwuBI6hKvtxpgQuAvOFhyqs90U7cww%3D%3D" ); /*Service Key*/
+            urlBuilder.append("?" + URLEncoder.encode("format","UTF-8") + "=" + URLEncoder.encode("json", "UTF-8") ); /*Service Key*/
+            urlBuilder.append("&" + URLEncoder.encode("serviceKey","UTF-8") + "=" +"WGQIT5NrsgBmzWYajkZZlOYS9tf8E6yNihUQiFNg3Dvl6mwxhpu0V%2FlzjwuBI6hKvtxpgQuAvOFhyqs90U7cww%3D%3D" ); /*Service Key*/
+            //urlBuilder.append("&" + URLEncoder.encode("stationId","UTF-8") + "=" + URLEncoder.encode("227000521", "UTF-8")); //정류소 id
+            urlBuilder.append("&" + URLEncoder.encode("stationId","UTF-8") + "=" + URLEncoder.encode("227000521", "UTF-8")); //정류소 id
+            URL url = new URL(urlBuilder.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Content-type", "application/json");
+            conn.setDoOutput(true);
+            System.out.println("Response code: " + conn.getResponseCode());
+            BufferedReader rd;
+
+            if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            }
+
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            rd.close();
+            conn.disconnect();
+
+            System.out.println(sb.toString());
+
+            JSONObject object = new JSONObject(sb.toString());
+            JSONArray jsonArray = object.getJSONObject("response").getJSONObject("msgBody").getJSONArray("busArrivalList");
+
+            for(int i = 0 ; i<jsonArray.length(); i++){
+                Map<String,Object> map = new HashMap<String, Object>();
+                System.out.println(jsonArray.get(i));
+                object =  jsonArray.getJSONObject(i);
+                int busnum = object.getInt("routeName");
+                int value = object.getInt("predictTime2");
+                System.out.println("busnum:"+ busnum +"/"+ "time"+ value);
+                map.put("busnum",busnum);
+                map.put("time",value);
+                System.out.println("map: "+ map);
+                resultList.add(map);
+                System.out.println("%%%%%%%%% List = > "+ resultList);
+            }
+            return resultList;
+        }
+
+    public static void main(String[] args) {
+        new BusAlram();
+    }
+
+    public void AlramStart (int hour, int minute){
+        WorkThread workThread = new WorkThread();
+        workThread.FutureWorkThread(hour,minute);
+        workThread.run();
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    LocalTime now = LocalTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm분:ss초");
+                    String time = now.format(formatter);
+                    resultList = workThread.work();
+                    busnum_first =(int) resultList.get(0).get("busnum");
+                    time_value_first = (int) resultList.get(0).get("time");
+                    busnum_second = (int) resultList.get(1).get("busnum");
+                    time_value_second = (int) resultList.get(1).get("time");
+                    String message= "현재시각 : "+time+"\n"+"도착 버스: "+ busnum_first +" 번"+ "  /  " + "도착 시간: " + time_value_first +" 분"+"\n" + "도착버스: " + busnum_second +" 번"+ "  /  " + "도착시간: " + time_value_second + " 분" ;
+                    JOptionPane pane = new JOptionPane(message,JOptionPane.PLAIN_MESSAGE);
+                    JDialog d = pane.createDialog((JFrame)null,"집가자");
+                    d.setLocation(1634,865);
+                    d.setVisible(true);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+        timer.scheduleAtFixedRate(task, 0, 60000); // 1분마다 실행
+    }
+
+}

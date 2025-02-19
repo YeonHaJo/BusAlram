@@ -51,7 +51,6 @@ public class WorkThread extends Thread {
 
     public long timeUntil(int year , int month, int day, int hour , int minute){
         System.out.println(year+" "+month+" "+day+" "+hour+" "+minute);
-        System.out.println("sfsfsdfsfsf");
         Date now = new Date();
         Calendar until = Calendar.getInstance();
         until.set(Calendar.YEAR, year);
@@ -64,12 +63,7 @@ public class WorkThread extends Thread {
         Date until_time = until.getTime();
         long sleep  =  until_time.getTime() - now.getTime();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        String timeInFormat_1 = sdf.format(until_time.getTime());
-        String timeInFormat_2 = sdf.format(now.getTime());
-
         long seconds = TimeUnit.MILLISECONDS.toSeconds(sleep);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(sleep);
         System.out.println("wake up time   => " + seconds);
         return  sleep;
     }

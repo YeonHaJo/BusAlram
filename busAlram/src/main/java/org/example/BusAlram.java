@@ -71,59 +71,6 @@ public class BusAlram extends Thread implements ActionListener {
 
     }
 
-    //241410001 마을1번   241408002 마을 3번
-        public List<Map<String, Object>> getMessage() throws IOException {
-            List<Map<String,Object>> resultList = new ArrayList<Map<String, Object>>();
-
-            StringBuilder urlBuilder = new StringBuilder("https://apis.data.go.kr/6410000/busarrivalservice/v2/getBusArrivalListv2"); /*URL*/
-            //urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" +"WGQIT5NrsgBmzWYajkZZlOYS9tf8E6yNihUQiFNg3Dvl6mwxhpu0V%2FlzjwuBI6hKvtxpgQuAvOFhyqs90U7cww%3D%3D" ); /*Service Key*/
-            urlBuilder.append("?" + URLEncoder.encode("format","UTF-8") + "=" + URLEncoder.encode("json", "UTF-8") ); /*Service Key*/
-            urlBuilder.append("&" + URLEncoder.encode("serviceKey","UTF-8") + "=" +"WGQIT5NrsgBmzWYajkZZlOYS9tf8E6yNihUQiFNg3Dvl6mwxhpu0V%2FlzjwuBI6hKvtxpgQuAvOFhyqs90U7cww%3D%3D" ); /*Service Key*/
-            //urlBuilder.append("&" + URLEncoder.encode("stationId","UTF-8") + "=" + URLEncoder.encode("227000521", "UTF-8")); //정류소 id
-            urlBuilder.append("&" + URLEncoder.encode("stationId","UTF-8") + "=" + URLEncoder.encode("227000521", "UTF-8")); //정류소 id
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-type", "application/json");
-            conn.setDoOutput(true);
-            System.out.println("Response code: " + conn.getResponseCode());
-            BufferedReader rd;
-
-            if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
-            } else {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-            }
-
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = rd.readLine()) != null) {
-                sb.append(line);
-            }
-            rd.close();
-            conn.disconnect();
-
-            System.out.println(sb.toString());
-
-            JSONObject object = new JSONObject(sb.toString());
-            JSONArray jsonArray = object.getJSONObject("response").getJSONObject("msgBody").getJSONArray("busArrivalList");
-
-            for(int i = 0 ; i<jsonArray.length(); i++){
-                Map<String,Object> map = new HashMap<String, Object>();
-                System.out.println(jsonArray.get(i));
-                object =  jsonArray.getJSONObject(i);
-                int busnum = object.getInt("routeName");
-                int value = object.getInt("predictTime2");
-                System.out.println("busnum:"+ busnum +"/"+ "time"+ value);
-                map.put("busnum",busnum);
-                map.put("time",value);
-                System.out.println("map: "+ map);
-                resultList.add(map);
-                System.out.println("%%%%%%%%% List = > "+ resultList);
-            }
-            return resultList;
-        }
-
     public static void main(String[] args) {
         new BusAlram();
     }

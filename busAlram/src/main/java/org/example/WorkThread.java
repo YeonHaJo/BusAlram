@@ -36,7 +36,7 @@ public class WorkThread extends Thread {
         try{
             sleep(timeUntil(now_year, now_month, now_day ,now_hour ,now_minute));
             System.out.println("wake up !!!!!!");
-            System.out.println("new branch create test");
+            System.out.println("new branch create test 2st");
         }catch (InterruptedException  e){
             e.getMessage();
         }

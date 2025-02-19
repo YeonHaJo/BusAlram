@@ -40,6 +40,8 @@ public class WorkThread extends Thread {
             System.out.println("new branch create test 3st");
             System.out.println("new branch create test 4st");
             System.out.println("new branch create test 5st   branchtest");
+            System.out.println("new branch create test 6st merge 충돌 테스트");
+            System.out.println("충돌 해결");
         }catch (InterruptedException  e){
             e.getMessage();
         }

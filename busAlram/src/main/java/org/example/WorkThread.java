@@ -36,12 +36,6 @@ public class WorkThread extends Thread {
         try{
             sleep(timeUntil(now_year, now_month, now_day ,now_hour ,now_minute));
             System.out.println("wake up !!!!!!");
-            System.out.println("new branch create test 2st");
-            System.out.println("new branch create test 3st");
-            System.out.println("new branch create test 4st");
-            System.out.println("new branch create test 5st   branchtest");
-            System.out.println("new branch create test 6st merge 충돌 테스트");
-            System.out.println("충돌 해결");
         }catch (InterruptedException  e){
             e.getMessage();
         }
@@ -49,9 +43,8 @@ public class WorkThread extends Thread {
 
     public List<Map<String,Object>> work() throws IOException {
         System.out.println("working ~~~");
-        List<Map<String,Object>> resultList = null;
         new Thread(r).start();
-        return resultList = getMessage();
+        return  getMessage();
 
     }
 
@@ -84,7 +77,7 @@ public class WorkThread extends Thread {
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
+        conn.setRequestProperty( "Content-type", "application/json");
         conn.setDoOutput(true);
         System.out.println("Response code: " + conn.getResponseCode());
         BufferedReader rd;
@@ -124,17 +117,14 @@ public class WorkThread extends Thread {
         return resultList;
     }
 
-    Runnable r = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                Thread.sleep(60000);  //1분마다 자동 닫힘
-                System.out.println("dispose  => "+ JOptionPane.getRootFrame());
-                JOptionPane.getRootFrame().dispose();
-                System.out.println("Thread: " + Thread.currentThread().getName());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+    Runnable r = () -> {
+        try {
+            Thread.sleep(60000);  //1분마다 자동 닫힘
+            System.out.println("dispose  => "+ JOptionPane.getRootFrame());
+            JOptionPane.getRootFrame().dispose();
+            System.out.println("Thread: " + Thread.currentThread().getName());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     };
 }

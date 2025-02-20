@@ -52,21 +52,24 @@ public class BusAlram extends Thread implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         System.out.println(e.getActionCommand());
         time = e.getActionCommand();
-
         switch (time) {
             case "5시30분":
-                AlramStart(17,25);
+                AlramStart(15,44);
+                break;
             case "5시45분":
                 AlramStart(17,40);
+                break;
             case "6시00분":
                 AlramStart(17,55);
+                break;
             case "6시15분":
                 AlramStart(18,10);
+                break;
             case "6시30분":
                 AlramStart(18,25);
+                break;
         }
 
     }
